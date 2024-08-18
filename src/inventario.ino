@@ -146,6 +146,7 @@ void loop() {
 
   Serial.print("A uid lida foi "); Serial.println(uid);
 
+  /*
   //Nome do dispositivo ------------------------------------------------------------------
   while (!leituraNome) {
     Serial.println("");
@@ -250,6 +251,7 @@ void loop() {
       leituraSala = true;
     }
   }
+  
   //Registro no Firebase ---------------------------------------------------------------
 
   Serial.println("");
@@ -259,6 +261,10 @@ void loop() {
   while (Serial.available() <= 0 ) {}
 
   String resposta = Serial.readString();
+
+  */
+
+
 
   if (resposta == "1") {
     //endereco = enderecoRegistro(uid, nome);
