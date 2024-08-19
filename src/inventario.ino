@@ -4,14 +4,16 @@
 #include <MFRC522.h>
 #include <WiFi.h>
 #include <Firebase_ESP_Client.h>
+#include <LiquidCrystal_I2C.h>
 #include "addons/TokenHelper.h"
 #include "addons/RTDBHelper.h"
 
+//Defines
+//#define enderecoLCD 0x20; //Testar com o código do arduino para identicar o endereco correto
+
 // Variáveis para Setup do Wifi
 String WIFI_SSID ;
-//#define WIFI_SSID "WIFI-LABORATORIO"
 String WIFI_PASSWORD;
-//#define WIFI_PASSWORD "labs2022!"
 
 //Variáveis para Setup do Firebase
 #define API_KEY "AIzaSyC9VYdBhgajTQylTf5Acuco4P_bdH5AlWo"
@@ -30,18 +32,22 @@ String nome = "";
 String codigo = "";
 String bloco = "";
 String sala = "";
-String endereco;
 
 bool leituraNome = false;
 bool leituraCodigo = false;
 bool leituraBloco = false;
 bool leituraSala = false;
 
+int blocoSelecionado = 0;
+int salaSelecionada = 0;
+
 //Definição do Módulo
-#define RST_PIN 21  // Configurable, see typical pin layout above
+#define RST_PIN 17   // Configurable, see typical pin layout above
 #define SS_PIN 5    // Configurable, see typical pin layout above
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
+
+LiquidCrystal_I2C lcd(ende,16,2);
 
 //*****************************************************************************************//
 
@@ -101,6 +107,12 @@ void firebaseSetup() {
   }
 }
 
+int selecionarOpcao(){
+  int valorPot = analogRead(A0); //Faz a leitura do valor do potenciometro
+  int conversao = map(valorPot, 0, 4095, 1, 3);
+  return conversao;
+}
+
 void setup() {
 
   //Inicializando a serial
@@ -110,20 +122,156 @@ void setup() {
   //Inicializando o RFID
   mfrc522.PCD_Init();
 
+  //Iniciando LCD
+  lcd.init();
+  lcd.clear(); 
+  lcd.backlight(); 
+
+  //lcd.setCursor(coluna,linha);
+
+  pinMode(/*Entrada Botão*/, INPUT_PULLUP);
+
 }
 
 //*****************************************************************************************//
 
 void loop() {
 
-  if (signupOK != true) {
+  int modo = selecionarOpcao(); /* 1 - Setup; 2 - Leitura; 3 - Registro */
+  bool botao = digitalRead(/*Entrada digital do botão de confirmação*/);
+
+  if (modo == 1 && botao == true){
+    if (signupOK != true) {
     //wifi
     wifiSetup();
 
     //firebase
     firebaseSetup();
+  	}
+  } else if (modo == 2 && botao == true){
+		bool selecaoBloco = false;
+		bool selecaoSala = false;
+
+		while (!selecaoBloco)
+		{
+			int valorPot = analogRead(A0);
+			int conversao = map(valorPot, 0, 4095, 1, 6);
+
+			lcd.setCursor(0, 0);
+			lcd.print("Bloco: ");
+			lcd.setCursor(6, 0);
+
+			String nomeBloco = "";
+
+			if(conversao == 1)
+			{
+				nomeBloco = "A";
+				lcd.print(nomeBLoco);				
+
+			} else if (conversao == 2)
+			{
+				nomeBloco = "B";
+				lcd.print(nomeBLoco);
+			} else if (conversao == 3)
+			{
+				nomeBloco = "C";
+				lcd.print(nomeBLoco);
+			} else if (conversao == 4)
+			{
+				nomeBloco = "D";
+				lcd.print(nomeBLoco);
+			} else if (conversao == 5)
+			{
+				nomeBloco = "E";
+				lcd.print(nomeBLoco);
+			} else if (conversao == 6)
+			{
+				nomeBloco = "F";
+				lcd.print(nomeBLoco);
+			}
+
+			bool valorBot = digitalRead(/*Entrada Botão*/);
+			if (valorBot == true)
+			{
+				selecaoBloco == true;
+				blocoSelecionado == conversao;
+			}
+		}
+
+		while (!selecaoSala)
+		{
+			int valorPot = analogRead(A0);
+			int numeroSala = 0;
+			
+			if(blocoSelecionado == 1)
+			{
+				numeroSala = /**/ ;
+			} else if (blocoSelecionado == 2)
+			{
+				numeroSala = /**/ ;
+			} else if (blocoSelecionado == 3)
+			{
+				numeroSala = /**/ ;
+			} else if (blocoSelecionado == 4)
+			{
+				numeroSala = /**/ ;
+			} else if (blocoSelecionado == 5)
+			{
+				numeroSala = /**/ ;
+			} else if (blocoSelecionado == 6)
+			{
+				numeroSala = /**/ ;
+			}
+
+			int conversao = map(valorPot, 0, 4095, 1, numeroSala);
+
+			String nomeSala = String(numeroSala);
+			lcd.clear();
+			lcd.setCursor(0, 0);
+			lcd.print("Sala: ");
+			lcd.setCursor(6, 0);
+			lcd.print(nomeSala);
+
+			bool valorBot = digitalRead(/*Entrada Botão*/);
+			if (valorBot == true)
+			{
+				selecaoSala == true;
+				salaSelecionada == conversao;
+			}
+		}
+
+		lcd.clear();
+		lcd.setCursor(0,0);
+		lcd.print("Local: ");
+		lcd.setCursor(7,0);
+		lcd.print(nomeBloco);
+		lcd.setCursor(8, 0);
+		lcd.print(nomeSala);
+
+		lcd.setCursor(0,1);
+		lcd.print("Iniciar leitura?")
+
+		bool valorBotSim = digitalRead(/*Entrada Botão*/);
+		bool valorBotNao = digitalRead(/*Entrada Botão*/);
+
+		if(valorBotSim == true && valorBotNao == false)
+		{
+
+		} else if (valorBotSim == false && valorBotNao == true)
+		{
+			return;
+		} else if (valorBotSim == true && valorBotNao == true)
+		{
+			/*Não realiza nada se os dois botoes forem pressionados ao mesmo tempo*/
+		}
+
+  } else if (modo == 3 && botao == true) {
+
   }
 
+
+  
+	/*
   if (!mfrc522.PICC_IsNewCardPresent()) {
     return;
   }
@@ -141,12 +289,9 @@ void loop() {
 
   uid.toUpperCase(); //Coloca os caracteres em caixa alta
 
-  //tagRFID.add("uid", uid);
-  //Interacao com o usuário
-
   Serial.print("A uid lida foi "); Serial.println(uid);
 
-  /*
+  
   //Nome do dispositivo ------------------------------------------------------------------
   while (!leituraNome) {
     Serial.println("");
@@ -251,6 +396,7 @@ void loop() {
       leituraSala = true;
     }
   }
+	*/
   
   //Registro no Firebase ---------------------------------------------------------------
 
@@ -262,12 +408,7 @@ void loop() {
 
   String resposta = Serial.readString();
 
-  */
-
-
-
   if (resposta == "1") {
-    //endereco = enderecoRegistro(uid, nome);
     Serial.println(resposta);
 
     if (Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 1000 || sendDataPrevMillis == 0)) {
@@ -293,13 +434,3 @@ void loop() {
   }
 }
 
-
-
-/*
-  String enderecoRegistro(String dad, String son) {
-  String path = dad;
-  path.concat(String("/"));
-  endereco.concat(String(son));
-
-  return path;
-  }*/
