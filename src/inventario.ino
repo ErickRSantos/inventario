@@ -9,15 +9,18 @@
 #include "addons/RTDBHelper.h"
 
 //Defines
+#define pinBot1 4
+#define pinBot2 0
+#define pinPot 34
 //#define enderecoLCD 0x20; //Testar com o código do arduino para identicar o endereco correto
 
 // Variáveis para Setup do Wifi
-String WIFI_SSID ;
+String WIFI_SSID;
 String WIFI_PASSWORD;
 
 //Variáveis para Setup do Firebase
-#define API_KEY "AIzaSyC9VYdBhgajTQylTf5Acuco4P_bdH5AlWo"
-#define DATABASE_URL "https://inventario-6601b-default-rtdb.firebaseio.com/rfids"
+#define API_KEY "AIzaSyAf0ubkUu9w0gJxshU7Lu78LGFlN3_QjcA"
+#define DATABASE_URL "https://inventario-c50f8-default-rtdb.firebaseio.com/"
 
 FirebaseData fbdo;
 FirebaseAuth auth;
@@ -41,13 +44,23 @@ bool leituraSala = false;
 int blocoSelecionado = 0;
 int salaSelecionada = 0;
 
+String nomeBloco = "";
+String nomeSala = "";
+String local = "";
+String path = "";
+
+int numeroSala = 0;
+
+int r = 0;
+int i = 0;
+
 //Definição do Módulo
 #define RST_PIN 17   // Configurable, see typical pin layout above
 #define SS_PIN 5    // Configurable, see typical pin layout above
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 
-LiquidCrystal_I2C lcd(ende,16,2);
+//LiquidCrystal_I2C lcd(ende, 16, 2);
 
 //*****************************************************************************************//
 
@@ -91,7 +104,8 @@ void firebaseSetup() {
   if (Firebase.signUp(&config, &auth, "", "")) {
     Serial.println("Conectado com sucesso!");
     signupOK = true;
-  } else {
+  }
+  else {
     Serial.printf("%s\n Erro na conexão: ", config.signer.signupError.message.c_str());
   }
 
@@ -107,8 +121,8 @@ void firebaseSetup() {
   }
 }
 
-int selecionarOpcao(){
-  int valorPot = analogRead(A0); //Faz a leitura do valor do potenciometro
+int selecionarOpcao() {
+  int valorPot = analogRead(pinPot); //Faz a leitura do valor do potenciometro
   int conversao = map(valorPot, 0, 4095, 1, 3);
   return conversao;
 }
@@ -123,13 +137,15 @@ void setup() {
   mfrc522.PCD_Init();
 
   //Iniciando LCD
+  /*
   lcd.init();
-  lcd.clear(); 
-  lcd.backlight(); 
+  lcd.clear();
+  lcd.backlight();*/
 
   //lcd.setCursor(coluna,linha);
 
-  pinMode(/*Entrada Botão*/, INPUT_PULLUP);
+  pinMode(pinBot1, INPUT);
+  pinMode(pinBot2, INPUT);
 
 }
 
@@ -138,140 +154,253 @@ void setup() {
 void loop() {
 
   int modo = selecionarOpcao(); /* 1 - Setup; 2 - Leitura; 3 - Registro */
-  bool botao = digitalRead(/*Entrada digital do botão de confirmação*/);
+  bool botao = digitalRead(pinBot1);
 
-  if (modo == 1 && botao == true){
+  if (modo == 1 && botao == HIGH) {
     if (signupOK != true) {
-    //wifi
-    wifiSetup();
+      //wifi
+      wifiSetup();
 
-    //firebase
-    firebaseSetup();
-  	}
-  } else if (modo == 2 && botao == true){
-		bool selecaoBloco = false;
-		bool selecaoSala = false;
+      //firebase
+      firebaseSetup();
+    }
+  }
+  else if (modo == 2 && botao == HIGH) {
+    bool selecaoBloco = false;
+    bool selecaoSala = false;
+    FirebaseJson leituraSala;
 
-		while (!selecaoBloco)
-		{
-			int valorPot = analogRead(A0);
-			int conversao = map(valorPot, 0, 4095, 1, 6);
+    while (!selecaoBloco)
+    {
+      int valorPot = analogRead(pinPot);
+      int conversao = map(valorPot, 0, 4095, 1, 6);
 
-			lcd.setCursor(0, 0);
-			lcd.print("Bloco: ");
-			lcd.setCursor(6, 0);
+      /*
+      lcd.setCursor(0, 0);
+      lcd.print("Bloco: ");
+      lcd.setCursor(6, 0);
+      */
 
-			String nomeBloco = "";
+      
 
-			if(conversao == 1)
-			{
-				nomeBloco = "A";
-				lcd.print(nomeBLoco);				
+      if (conversao == 1)
+      {
+        nomeBloco = "A";
+        //lcd.print(nomeBLoco);
 
-			} else if (conversao == 2)
-			{
-				nomeBloco = "B";
-				lcd.print(nomeBLoco);
-			} else if (conversao == 3)
-			{
-				nomeBloco = "C";
-				lcd.print(nomeBLoco);
-			} else if (conversao == 4)
-			{
-				nomeBloco = "D";
-				lcd.print(nomeBLoco);
-			} else if (conversao == 5)
-			{
-				nomeBloco = "E";
-				lcd.print(nomeBLoco);
-			} else if (conversao == 6)
-			{
-				nomeBloco = "F";
-				lcd.print(nomeBLoco);
-			}
+      }
+      else if (conversao == 2)
+      {
+        nomeBloco = "B";
+        //lcd.print(nomeBLoco);
+      }
+      else if (conversao == 3)
+      {
+        nomeBloco = "C";
+        //lcd.print(nomeBLoco);
+      }
+      else if (conversao == 4)
+      {
+        nomeBloco = "D";
+        //lcd.print(nomeBLoco);
+      }
+      else if (conversao == 5)
+      {
+        nomeBloco = "E";
+        //lcd.print(nomeBLoco);
+      }
+      else if (conversao == 6)
+      {
+        nomeBloco = "F";
+        //lcd.print(nomeBLoco);
+      }
 
-			bool valorBot = digitalRead(/*Entrada Botão*/);
-			if (valorBot == true)
-			{
-				selecaoBloco == true;
-				blocoSelecionado == conversao;
-			}
-		}
+      bool valorBot = digitalRead(pinBot1);
+      if (valorBot == true)
+      {
+        selecaoBloco == true;
+        blocoSelecionado == conversao;
+      }
+    }
 
-		while (!selecaoSala)
-		{
-			int valorPot = analogRead(A0);
-			int numeroSala = 0;
-			
-			if(blocoSelecionado == 1)
-			{
-				numeroSala = /**/ ;
-			} else if (blocoSelecionado == 2)
-			{
-				numeroSala = /**/ ;
-			} else if (blocoSelecionado == 3)
-			{
-				numeroSala = /**/ ;
-			} else if (blocoSelecionado == 4)
-			{
-				numeroSala = /**/ ;
-			} else if (blocoSelecionado == 5)
-			{
-				numeroSala = /**/ ;
-			} else if (blocoSelecionado == 6)
-			{
-				numeroSala = /**/ ;
-			}
+    while (!selecaoSala)
+    {
+      int valorPot = analogRead(pinPot);
+      
 
-			int conversao = map(valorPot, 0, 4095, 1, numeroSala);
+      if (blocoSelecionado == 1)
+      {
+        numeroSala = 20;
+      }
+      else if (blocoSelecionado == 2)
+      {
+        numeroSala = 20;
+      }
+      else if (blocoSelecionado == 3)
+      {
+        numeroSala = 20;
+      }
+      else if (blocoSelecionado == 4)
+      {
+        numeroSala = 20;
+      }
+      else if (blocoSelecionado == 5)
+      {
+        numeroSala = 20;
+      }
+      else if (blocoSelecionado == 6)
+      {
+        numeroSala = 20;
+      }
 
-			String nomeSala = String(numeroSala);
-			lcd.clear();
-			lcd.setCursor(0, 0);
-			lcd.print("Sala: ");
-			lcd.setCursor(6, 0);
-			lcd.print(nomeSala);
+      int conversao = map(valorPot, 0, 4095, 1, numeroSala);
 
-			bool valorBot = digitalRead(/*Entrada Botão*/);
-			if (valorBot == true)
-			{
-				selecaoSala == true;
-				salaSelecionada == conversao;
-			}
-		}
+      /*
+      String nomeSala = String(numeroSala);
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Sala: ");
+      lcd.setCursor(6, 0);
+      lcd.print(nomeSala);
+      */
 
-		lcd.clear();
-		lcd.setCursor(0,0);
-		lcd.print("Local: ");
-		lcd.setCursor(7,0);
-		lcd.print(nomeBloco);
-		lcd.setCursor(8, 0);
-		lcd.print(nomeSala);
+      bool valorBot = digitalRead(pinBot1);
+      if (valorBot == true)
+      {
+        selecaoSala == true;
+        salaSelecionada == conversao;
+      }
+    }
 
-		lcd.setCursor(0,1);
-		lcd.print("Iniciar leitura?")
+    nomeSala = String(numeroSala);
 
-		bool valorBotSim = digitalRead(/*Entrada Botão*/);
-		bool valorBotNao = digitalRead(/*Entrada Botão*/);
+    
+    local.concat(nomeBloco);
+    local.concat(nomeSala);
 
-		if(valorBotSim == true && valorBotNao == false)
-		{
+    /*
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Local: ");
+    lcd.setCursor(7, 0);
+    lcd.print(local);
+    */
 
-		} else if (valorBotSim == false && valorBotNao == true)
-		{
-			return;
-		} else if (valorBotSim == true && valorBotNao == true)
-		{
-			/*Não realiza nada se os dois botoes forem pressionados ao mesmo tempo*/
-		}
+    //lcd.setCursor(0, 1);
+    //lcd.print("Iniciar leitura?")
 
-  } else if (modo == 3 && botao == true) {
+      bool iniciarLeitura = false;
+
+    i = 0;
+    while (i != 0)
+    {
+      
+      bool valorBotSim = digitalRead(pinBot1);
+      bool valorBotNao = digitalRead(pinBot2);
+
+      if (valorBotSim == true && valorBotNao == false)
+      {
+        iniciarLeitura = true;
+        Serial.println("Leitura selecionada");
+        i = 1;
+      }
+      else if (valorBotSim == false && valorBotNao == true)
+      {
+        iniciarLeitura = false;
+        Serial.println("Leitura não selecionada");
+        i = 1;
+        return;
+      }
+      else if (valorBotSim == true && valorBotNao == true)
+      {
+        /*Não realiza nada se os dois botoes forem pressionados ao mesmo tempo*/
+      }
+      delay(100);
+    }
+
+    if (iniciarLeitura == true) {
+
+      path = "/" + local;
+      Firebase json;
+      bool repeat = false;
+      //Inicio do processo de leitura de todas as tags e registro nas salas dadas pelo usuario
+
+      while (repeat != true) {
+        if (!mfrc522.PICC_IsNewCardPresent()) {
+          return;
+        }
+        if (!mfrc522.PICC_ReadCardSerial()) {
+          return;
+        }
+        uid = "";
+        for (byte i = 0; i < mfrc522.uid.uidByte[i]; i++) {
+          uid.concat(String(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " "));
+          uid.concat(String(mfrc522.uid.uidByte[i], HEX));
+        }
+        uid.toUpperCase(); //Coloca os caracteres em caixa alta
+        Serial.println("Tag lida");
+        Serial.println(uid);
+
+        i = 0;
+        while (i != 0)
+        {
+          bool valorBotSim = digitalRead(pinBot1);
+          bool valorBotNao = digitalRead(pinBot2);
+
+          if (valorBotSim == true && valorBotNao == false)
+          {
+            json.set(
+            Serial.println("caminho registrado");
+            i = 1;
+          }
+          else if (valorBotSim == false && valorBotNao == true)
+          {
+            i = 1;
+            Serial.println("Objeto não registrado");
+            return;
+          }
+          else if (valorBotSim == true && valorBotNao == true)
+          {
+            /*Não realiza nada se os dois botoes forem pressionados ao mesmo tempo*/
+          }
+          delay(100);
+        }
+
+        i = 0;
+        while( i != 0)
+        {
+          bool valorBotSim = digitalRead(pinBot1);
+          bool valorBotNao = digitalRead(pinBot2);
+
+          if (valorBotSim == true && valorBotNao == false)
+          {
+            repeat = true;
+            Serial.println("Ler mais uma tag");
+            r = 1;
+          }
+          else if (valorBotSim == false && valorBotNao == true)
+          {
+            repeat = false;
+            Serial.println("Não ler mais uma tag");
+            r = 1;
+          }
+          else if (valorBotSim == true && valorBotNao == true)
+          {
+            /*Não realiza nada se os dois botoes forem pressionados ao mesmo tempo*/
+          }
+          delay(100);
+        }
+      }
+    }
+
+  }
+  else if (modo == 3 && botao == true) {
 
   }
 
 
-  
-	/*
+
+  /*
   if (!mfrc522.PICC_IsNewCardPresent()) {
     return;
   }
@@ -291,7 +420,7 @@ void loop() {
 
   Serial.print("A uid lida foi "); Serial.println(uid);
 
-  
+
   //Nome do dispositivo ------------------------------------------------------------------
   while (!leituraNome) {
     Serial.println("");
@@ -396,15 +525,15 @@ void loop() {
       leituraSala = true;
     }
   }
-	*/
-  
+  */
+
   //Registro no Firebase ---------------------------------------------------------------
 
   Serial.println("");
   Serial.println("Deseja registrar os dados dessa tag o banco de dados? (1 - SIM, 0 - Não)");
   Serial.print("Resposta: ");
 
-  while (Serial.available() <= 0 ) {}
+  while (Serial.available() <= 0) {}
 
   String resposta = Serial.readString();
 
@@ -422,13 +551,15 @@ void loop() {
 
       if (Firebase.RTDB.setJSON(&fbdo, uid, &tagRFID)) {
         Serial.println("Os dados foram registrados");
-      } else {
+      }
+      else {
         Serial.println("FALHA AO REGISTRAR" + fbdo.errorReason());
         Serial.println("");
       }
     }
 
-  } else {
+  }
+  else {
     Serial.println("Dados não registrados");
     return;
   }
