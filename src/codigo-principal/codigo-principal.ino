@@ -11,7 +11,7 @@
 //Defines
 #define pinBot1 4
 #define pinBot2 0
-#define pinPot 34
+#define pinPot 39
 //#define enderecoLCD 0x20; //Testar com o código do arduino para identicar o endereco correto
 
 // Variáveis para Setup do Wifi
@@ -45,7 +45,7 @@ String path = "";
 
 int numeroSala = 0;
 
-bool iniciarLeitura;
+bool iniciarLeitura = false;
 
 
 //Definição do Módulo
@@ -252,8 +252,8 @@ void loop() {
       lcd.print(nomeSala);
       */
 
-      bool valorBot = digitalRead(pinBot1);
-      if (valorBot == true)
+      int valorBot = digitalRead(pinBot1);
+      if (valorBot == HIGH)
       {
         selecaoSala == true;
         salaSelecionada == conversao;
@@ -287,13 +287,13 @@ void loop() {
       {
         iniciarLeitura = true;
         Serial.println("Leitura selecionada");
-        i = 1;
+        acaoBot = 1;
       }
       else if (valorBotSim == LOW && valorBotNao == HIGH)
       {
         iniciarLeitura = false;
         Serial.println("Leitura não selecionada");
-        i = 1;
+        acaoBot = 1;
         return;
       }
       else if (valorBotSim == HIGH && valorBotNao == HIGH)
@@ -339,11 +339,11 @@ void loop() {
           {
             leituraSala.add(uid);
             Serial.println("uid registrada");
-            i = 1;
+            confirma = 1;
           }
           else if (valorBotSim == LOW && valorBotNao == HIGH) //Caso em que o botão de cancelar é pressionado
           {
-            i = 1;
+            confirma = 1;
             Serial.println("uid não registrada");
             return;
           }
@@ -380,7 +380,7 @@ void loop() {
         }
       } //finalizou as leituras
 
-      Serial.print(Firebase.RTDB.setArray(&fbdo, path, leituraSala) ? "ok" : fbdo.errorReason().c_str());
+      Serial.print(Firebase.RTDB.setArray(&fbdo, path, &leituraSala) ? "ok" : fbdo.errorReason().c_str());
     }
 
   }
@@ -388,4 +388,3 @@ void loop() {
 
   }
 }
-
