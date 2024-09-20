@@ -1,6 +1,7 @@
 
 //Importação de bibliotecas
 #include <SPI.h>
+#include <Wire.h>
 #include <MFRC522.h>
 #include <WiFi.h>
 #include <Firebase_ESP_Client.h>
@@ -12,7 +13,7 @@
 #define pinBot1 4
 #define pinBot2 0
 #define pinPot 39
-//#define enderecoLCD 0x20; //Testar com o código do arduino para identicar o endereco correto
+#define enderecoLCD 0x27 //Testar com o código do arduino para identicar o endereco correto
 
 // Variáveis para Setup do Wifi
 String WIFI_SSID;
@@ -54,7 +55,7 @@ bool iniciarLeitura = false;
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 
-//LiquidCrystal_I2C lcd(ende, 16, 2);
+LiquidCrystal_I2C lcd(enderecoLCD, 16, 2);
 
 //*****************************************************************************************//
 
@@ -81,11 +82,16 @@ void wifiSetup() {
     Serial.print(".");
     delay(300);
   }
+
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Wifi conectado!");
+  /*
   Serial.println();
   Serial.println("- Wifi conectado com sucesso!");
   Serial.println("----------------------------------------------");
   Serial.println();
-
+  */
 
 }
 void firebaseSetup() {
@@ -108,10 +114,15 @@ void firebaseSetup() {
   Firebase.reconnectWiFi(true);
 
   if (Firebase.ready()) {
+    
+    lcd.setCursor(0,1);
+    lcd.print("Firebase OK!");
+    /*
     Serial.println("Banco de dados pronto.");
     Serial.println("");
     Serial.println("----------------------------------------------");
     Serial.println("");
+    */
   }
 }
 
@@ -131,10 +142,10 @@ void setup() {
   mfrc522.PCD_Init();
 
   //Iniciando LCD
-  /*
-  lcd.init();
+  
+  lcd.begin(12,14);
   lcd.clear();
-  lcd.backlight();*/
+  lcd.backlight();
 
   //lcd.setCursor(coluna,linha);
 
@@ -148,7 +159,13 @@ void setup() {
 void loop() {
 
   int modo = selecionarOpcao(); /* 1 - Setup; 2 - Leitura; 3 - Registro */
+  String smodo = String(modo);
   bool botao = digitalRead(pinBot1);
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Modo: ");
+  lcd.setCursor(6,0);
+  lcd.print(smodo);
 
   if (modo == 1 && botao == HIGH) { // Modo setup
     if (signupOK != true) {
@@ -157,20 +174,25 @@ void loop() {
 
       //firebase
       firebaseSetup();
+      delay(1000);
     }
+    modo = 0;
   }
   else if (modo == 2 && botao == HIGH) {
+    delay(1000);
+    lcd.clear();
     
     while (!selecaoBloco)
     {
+      
       int valorPot = analogRead(pinPot);
       int conversao = map(valorPot, 0, 4095, 1, 6);
 
-      /*
+      
       lcd.setCursor(0, 0);
       lcd.print("Bloco: ");
-      lcd.setCursor(6, 0);
-      */
+      lcd.setCursor(7, 0);
+      
 
       if (conversao == 1)
       {
@@ -213,6 +235,9 @@ void loop() {
 
     while (!selecaoSala)
     {
+      lcd.setCursor(0, 0);
+      lcd.print("Bloco: ");
+      lcd.setCursor(6, 0);
       int valorPot = analogRead(pinPot);
       
 
@@ -243,14 +268,11 @@ void loop() {
 
       int conversao = map(valorPot, 0, 4095, 1, numeroSala);
 
-      /*
       String nomeSala = String(numeroSala);
-      lcd.clear();
-      lcd.setCursor(0, 0);
+      lcd.setCursor(0, 1);
       lcd.print("Sala: ");
-      lcd.setCursor(6, 0);
+      lcd.setCursor(6, 1);
       lcd.print(nomeSala);
-      */
 
       int valorBot = digitalRead(pinBot1);
       if (valorBot == HIGH)
@@ -261,18 +283,19 @@ void loop() {
       }
     }
 
+    delay(1000);
+
     local.concat(nomeBloco);
     local.concat(nomeSala);
-
-    /*
+    
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Local: ");
     lcd.setCursor(7, 0);
     lcd.print(local);
-    */
-    //lcd.setCursor(0, 1);
-    //lcd.print("Iniciar leitura?")
+    
+    lcd.setCursor(0, 1);
+    lcd.print("Iniciar leitura?");
 
     iniciarLeitura = false;
 
@@ -286,13 +309,21 @@ void loop() {
       if (valorBotSim == HIGH && valorBotNao == LOW)
       {
         iniciarLeitura = true;
-        Serial.println("Leitura selecionada");
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("Iniciando");
+        lcd.setCursor(0,1);
+        lcd.print("leitura");
+        delay(1000);
         acaoBot = 1;
       }
       else if (valorBotSim == LOW && valorBotNao == HIGH)
       {
         iniciarLeitura = false;
-        Serial.println("Leitura não selecionada");
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("Retornando");
+        delay(1000);
         acaoBot = 1;
         return;
       }
@@ -304,6 +335,9 @@ void loop() {
     }
 
     if (iniciarLeitura == true) {
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("Lendo");
       FirebaseJsonArray leituraSala; //Cria instancia para guardar as uids
 
       path = "/" + local;
@@ -326,7 +360,9 @@ void loop() {
         }
         uid.toUpperCase(); //Coloca os caracteres em caixa alta
 
-        Serial.println("Tag lida");
+        lcd.setCursor(0,1);
+        lcd.print("> ");
+        lcd.setCursor(2,1);
         Serial.println(uid);
 
         int confirma = 0;
@@ -338,13 +374,23 @@ void loop() {
           if (valorBotSim == HIGH && valorBotNao == LOW) //Caso em que o botão de confirmar é pressionado
           {
             leituraSala.add(uid);
-            Serial.println("uid registrada");
+            lcd.setCursor(2,1);
+            lcd.print("              ");
+            delay(500);
+            lcd.print("Registrada");
+            delay(500);
+            lcd.print("              ");
             confirma = 1;
           }
           else if (valorBotSim == LOW && valorBotNao == HIGH) //Caso em que o botão de cancelar é pressionado
           {
             confirma = 1;
-            Serial.println("uid não registrada");
+            lcd.setCursor(2,1);
+            lcd.print("              ");
+            delay(500);
+            lcd.print("Não registrada");
+            delay(1000);
+            lcd.print("              ");
             return;
           }
           else if (valorBotSim == HIGH && valorBotNao == HIGH) //Caso em que os dois botões são pressionados
@@ -360,16 +406,25 @@ void loop() {
           int valorBotSim = digitalRead(pinBot1);
           int valorBotNao = digitalRead(pinBot2);
 
+          lcd.setCursor(2,1);
+          lcd.print("Continuar?");
+
           if (valorBotSim == HIGH && valorBotNao == LOW)
           {
             repeat = true;
-            Serial.println("Ler mais uma tag");
+            lcd.setCursor(2,1);
+            lcd.print("              ");
             confirmaRep = 1;
           }
           else if (valorBotSim == LOW && valorBotNao == HIGH)
           {
             repeat = false;
-            Serial.println("Não ler mais");
+            lcd.setCursor(2,1);
+            lcd.print("              ");
+            delay(500);
+            lcd.print("Voltando");
+            delay(1000);
+            lcd.print("              ");
             confirmaRep = 1;
           }
           else if (valorBotSim == HIGH && valorBotNao == HIGH)
@@ -382,7 +437,7 @@ void loop() {
 
       Serial.print(Firebase.RTDB.setArray(&fbdo, path, &leituraSala) ? "ok" : fbdo.errorReason().c_str());
     }
-
+    modo = 0;
   }
   else if (modo == 3 && botao == true) {
 
