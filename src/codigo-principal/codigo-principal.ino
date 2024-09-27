@@ -7,7 +7,7 @@
 #include <Firebase_ESP_Client.h>
 #include <LiquidCrystal_I2C.h>
 #include "addons/TokenHelper.h"
-#include "addons/RTDBHelper.h"
+#include "addons/RTDBHelper.h" 
 
 //Defines
 #define pinBot1 4
@@ -143,7 +143,7 @@ void setup() {
 
   //Iniciando LCD
   
-  lcd.begin(12,14);
+  lcd.init();
   lcd.clear();
   lcd.backlight();
 
@@ -161,6 +161,7 @@ void loop() {
   int modo = selecionarOpcao(); /* 1 - Setup; 2 - Leitura; 3 - Registro */
   String smodo = String(modo);
   bool botao = digitalRead(pinBot1);
+  Serial.print(modo);
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("Modo: ");
