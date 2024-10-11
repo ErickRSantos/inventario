@@ -12,7 +12,7 @@
 //Defines
 #define pinBot1 4
 #define pinBot2 0
-#define pinPot 39
+#define pinPot 34
 #define enderecoLCD 0x27 //Testar com o código do arduino para identicar o endereco correto
 
 // Variáveis para Setup do Wifi
@@ -148,7 +148,7 @@ void setup() {
   lcd.backlight();
 
   //lcd.setCursor(coluna,linha);
-
+  pinMode(pinPot, INPUT);
   pinMode(pinBot1, INPUT);
   pinMode(pinBot2, INPUT);
 

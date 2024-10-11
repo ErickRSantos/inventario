@@ -14,8 +14,8 @@ String WIFI_PASSWORD;
 //#define WIFI_PASSWORD "labs2022!"
 
 //Variáveis para Setup do Firebase
-#define API_KEY "AIzaSyC9VYdBhgajTQylTf5Acuco4P_bdH5AlWo"
-#define DATABASE_URL "https://inventario-6601b-default-rtdb.firebaseio.com/rfids"
+#define API_KEY "AIzaSyAf0ubkUu9w0gJxshU7Lu78LGFlN3_QjcA"
+#define DATABASE_URL "https://inventario-c50f8-default-rtdb.firebaseio.com/rfids"
 
 FirebaseData fbdo;
 FirebaseAuth auth;
