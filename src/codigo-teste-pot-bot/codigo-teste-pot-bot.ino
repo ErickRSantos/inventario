@@ -28,8 +28,7 @@ void loop() {
   int leiturab1 = digitalRead(4);
   digitalWrite(13, leiturab1);
 
-  String sleiturab1 = String(leiturab1);
-  Serial.println(sleiturab1);
+  Serial.println(leiturab1);
 
   lcd.setCursor(0,0);
   lcd.print("Modo: ");

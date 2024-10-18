@@ -33,6 +33,7 @@ bool signupOK = false;
 //Variáveis do projeto
 String uid = "";
 
+
 // Variáveis do modo de leitura
 bool selecaoBloco = false;
 bool selecaoSala = false;
@@ -48,6 +49,9 @@ int numeroSala = 0;
 
 bool iniciarLeitura = false;
 
+int valorPot = 0;
+int valorBot = 0;
+int conversao = 0;
 
 //Definição do Módulo
 #define RST_PIN 17   // Configurable, see typical pin layout above
@@ -70,7 +74,7 @@ void wifiSetup() {
 
 
   Serial.println("- Agora, qual é a senha da rede? ");
-  delay(500);
+  delay(100);
 
   while (Serial.available() <= 0) {}
   WIFI_PASSWORD = Serial.readString();
@@ -127,9 +131,9 @@ void firebaseSetup() {
 }
 
 int selecionarOpcao() {
-  int valorPot = analogRead(pinPot); //Faz a leitura do valor do potenciometro
-  int conversao = map(valorPot, 0, 4095, 1, 3);
-  return conversao;
+  int m = analogRead(pinPot); //Faz a leitura do valor do potenciometro
+  int i = map(m, 0, 4095, 1, 3);
+  return i;
 }
 
 void setup() {
@@ -161,7 +165,6 @@ void loop() {
   int modo = selecionarOpcao(); /* 1 - Setup; 2 - Leitura; 3 - Registro */
   String smodo = String(modo);
   bool botao = digitalRead(pinBot1);
-  Serial.print(modo);
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("Modo: ");
@@ -175,19 +178,20 @@ void loop() {
 
       //firebase
       firebaseSetup();
-      delay(1000);
+      delay(100);
     }
     modo = 0;
   }
   else if (modo == 2 && botao == HIGH) {
-    delay(1000);
+    delay(100);
     lcd.clear();
     
     while (!selecaoBloco)
     {
-      
-      int valorPot = analogRead(pinPot);
-      int conversao = map(valorPot, 0, 4095, 1, 6);
+      delay(100);
+
+      valorPot = analogRead(pinPot);
+      conversao = map(valorPot, 0, 4095, 1, 6);
 
       
       lcd.setCursor(0, 0);
@@ -198,49 +202,49 @@ void loop() {
       if (conversao == 1)
       {
         nomeBloco = "A";
-        //lcd.print(nomeBLoco);
+        lcd.print(nomeBloco);
       }
       else if (conversao == 2)
       {
         nomeBloco = "B";
-        //lcd.print(nomeBLoco);
+        lcd.print(nomeBloco);
       }
       else if (conversao == 3)
       {
         nomeBloco = "C";
-        //lcd.print(nomeBLoco);
+        lcd.print(nomeBloco);
       }
       else if (conversao == 4)
       {
         nomeBloco = "D";
-        //lcd.print(nomeBLoco);
+        lcd.print(nomeBloco);
       }
       else if (conversao == 5)
       {
         nomeBloco = "E";
-        //lcd.print(nomeBLoco);
+        lcd.print(nomeBloco);
       }
       else if (conversao == 6)
       {
         nomeBloco = "F";
-        //lcd.print(nomeBLoco);
+        lcd.print(nomeBloco);
       }
 
-      bool valorBot = digitalRead(pinBot1);
-      if (valorBot == true)
+      valorBot = digitalRead(pinBot1);
+      if (valorBot == 1)
       {
-        selecaoBloco == true;
-        blocoSelecionado == conversao;
+        selecaoBloco = true;
+        blocoSelecionado = conversao;
+
       }
     }
 
     while (!selecaoSala)
     {
-      lcd.setCursor(0, 0);
-      lcd.print("Bloco: ");
-      lcd.setCursor(6, 0);
-      int valorPot = analogRead(pinPot);
-      
+      delay(100);
+
+      valorPot = analogRead(pinPot);
+          
 
       if (blocoSelecionado == 1)
       {
@@ -267,24 +271,24 @@ void loop() {
         numeroSala = 20;
       }
 
-      int conversao = map(valorPot, 0, 4095, 1, numeroSala);
+      int conversao = map(valorPot, 0, 4095, 1, numeroSala);  
 
-      String nomeSala = String(numeroSala);
+      String nomeSala = String(conversao);
       lcd.setCursor(0, 1);
       lcd.print("Sala: ");
       lcd.setCursor(6, 1);
       lcd.print(nomeSala);
 
-      int valorBot = digitalRead(pinBot1);
-      if (valorBot == HIGH)
+      valorBot = digitalRead(pinBot1);
+      if (valorBot == 1)
       {
-        selecaoSala == true;
-        salaSelecionada == conversao;
+        selecaoSala = true;
+        salaSelecionada = conversao;
         nomeSala = String(numeroSala);
       }
     }
 
-    delay(1000);
+    delay(100);
 
     local.concat(nomeBloco);
     local.concat(nomeSala);
@@ -443,4 +447,6 @@ void loop() {
   else if (modo == 3 && botao == true) {
 
   }
+
+  delay(200);
 }
