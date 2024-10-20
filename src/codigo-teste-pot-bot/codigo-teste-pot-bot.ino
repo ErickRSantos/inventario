@@ -15,24 +15,15 @@ void setup() {
   lcd.backlight();
 
   pinMode(4, INPUT);//Confirma 
-  pinMode(13, OUTPUT);
+  pinMode(0, INPUT);
 
 }
 
 void loop() {
 
-  int leitura = analogRead(pinPot);
-  int conversao = map(leitura, 0, 4095, 1, 3);
-  String sconversao = String(conversao);
+  int a = digitalRead(4);
+  int b = digitalRead(0);
 
-  int leiturab1 = digitalRead(4);
-  digitalWrite(13, leiturab1);
-
-  Serial.println(leiturab1);
-
-  lcd.setCursor(0,0);
-  lcd.print("Modo: ");
-  lcd.setCursor(6, 0);
-  lcd.print(sconversao);
+  Serial.print(a); Serial.println(b);
 
 }
