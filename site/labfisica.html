@@ -12,14 +12,14 @@
         import { getDatabase, ref, onValue, push, update, remove } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
 
         const firebaseConfig = {
-        apiKey: "AIzaSyAf0ubkUu9w0gJxshU7Lu78LGFlN3_QjcA",
-        authDomain: "inventario-c50f8.firebaseapp.com",
-        databaseURL: "https://inventario-c50f8-default-rtdb.firebaseio.com",
-        projectId: "inventario-c50f8",
-        storageBucket: "inventario-c50f8.firebasestorage.app",
-        messagingSenderId: "369500930345",
-        appId: "1:369500930345:web:aee12cb852f5a8711d7738",
-        measurementId: "G-5GJP3TWZPC"
+            apiKey: "AIzaSyAf0ubkUu9w0gJxshU7Lu78LGFlN3_QjcA",
+            authDomain: "inventario-c50f8.firebaseapp.com",
+            databaseURL: "https://inventario-c50f8-default-rtdb.firebaseio.com",
+            projectId: "inventario-c50f8",
+            storageBucket: "inventario-c50f8.firebasestorage.app",
+            messagingSenderId: "369500930345",
+            appId: "1:369500930345:web:aee12cb852f5a8711d7738",
+            measurementId: "G-5GJP3TWZPC"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -109,37 +109,27 @@
             }
         }
 
-        // Função para buscar por filtros (área, fabricante, estado)
+        // Função para buscar equipamentos por termo
         window.searchEquipments = function() {
-            const searchTermArea = document.getElementById('search-area-modal').value.toLowerCase();
-            const searchTermFabricante = document.getElementById('search-fabricante-modal').value.toLowerCase();
-            const searchTermEstado = document.getElementById('search-estado-modal').value.toLowerCase();
+            const searchTerm = document.getElementById('search-term').value.toLowerCase();
 
             onValue(equipmentsRef, (snapshot) => {
                 const filteredData = [];
                 snapshot.forEach((childSnapshot) => {
                     const data = childSnapshot.val();
-                    if (data.area.toLowerCase().includes(searchTermArea) &&
-                        data.fabricante.toLowerCase().includes(searchTermFabricante) &&
-                        data.estado.toLowerCase().includes(searchTermEstado)) {
+                    if (data.descricao.toLowerCase().includes(searchTerm) ||
+                        data.area.toLowerCase().includes(searchTerm) ||
+                        data.fabricante.toLowerCase().includes(searchTerm) ||
+                        data.estado.toLowerCase().includes(searchTerm) ||
+                        data.codigoPatrimonio.toLowerCase().includes(searchTerm) ||
+                        data.codigoKit.toLowerCase().includes(searchTerm)) {
                         filteredData.push({ key: childSnapshot.key, ...data });
                     }
                 });
                 paginateData(filteredData);
-                closeSearchModal(); // Fecha o modal após buscar
             }, (error) => {
                 console.error('Erro ao buscar dados:', error);
             });
-        }
-
-        // Função para abrir o modal de busca
-        window.openSearchModal = function(area, fabricante, estado) {
-            document.getElementById('search-area-modal').value = area;
-            document.getElementById('search-fabricante-modal').value = fabricante;
-            document.getElementById('search-estado-modal').value = estado;
-
-            // Exibir o modal de busca
-            document.getElementById('search-modal').style.display = 'block';
         }
 
         // Função de adicionar equipamento
@@ -161,7 +151,6 @@
                     estado
                 };
 
-            
                 push(equipmentsRef, newEquip).then(() => {
                     alert('Equipamento cadastrado com sucesso!');
                     document.getElementById('add-form').reset();
@@ -176,7 +165,6 @@
 
         // Função de abrir modal e preencher dados para edição
         window.editEquip = function(id, descricao, area, codigoPatrimonio, codigoKit, fabricante, estado) {
-            // Preencher os campos do modal com os dados
             document.getElementById('edit-id').value = id;
             document.getElementById('edit-descricao').value = descricao;
             document.getElementById('edit-area').value = area;
@@ -185,7 +173,6 @@
             document.getElementById('edit-fabricante').value = fabricante;
             document.getElementById('edit-estado').value = estado;
 
-            // Exibir o modal de edição
             document.getElementById('edit-modal').style.display = 'block';
         }
 
@@ -251,21 +238,12 @@
         window.closeModal = function() {
             document.getElementById('modal').style.display = 'none';
             document.getElementById('edit-modal').style.display = 'none';
-            closeSearchModal(); // Fecha o modal de busca
-        }
-
-        // Função para fechar o modal de busca
-        function closeSearchModal() {
-            document.getElementById('search-modal').style.display = 'none';
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('search-btn').addEventListener('click', () => {
-                openSearchModal('', '', ''); // Abre o modal de busca
-            });
             document.getElementById('items-per-page').addEventListener('change', updateItemsPerPage);
             document.querySelector('#add-item-btn').addEventListener('click', openModal);
-            document.querySelectorAll('.close').forEach(closeBtn => closeBtn.addEventListener('click', closeModal));
+            document.getElementById('search-term').addEventListener('input', searchEquipments);
             onValue(equipmentsRef, renderTable);
         });
     </script>
@@ -318,6 +296,17 @@
             margin-bottom: 20px; /* Espaço abaixo dos botões */
         }
 
+        .search-container {
+            display: flex;
+            align-items: center; /* Alinhamento vertical */
+            margin-left: 15px; /* Espaço à esquerda */
+        }
+
+        .search-container input {
+            width: 150px; /* Largura do campo de pesquisa */
+            margin-left: 10px; /* Espaço entre o botão e o campo de pesquisa */
+        }
+
         .items-per-page-container {
             display: flex;
             align-items: center; /* Alinhamento vertical */
@@ -335,24 +324,10 @@
         <h1>Equipamentos do Laboratório de Física</h1>
         
         <div class="button-container">
-            <button id="search-btn">Buscar</button>
             <button id="add-item-btn">Adicionar Novo Item</button>
-        </div>
-
-        <div class="search-container">
-            <!-- Modal para Resultados da Busca -->
-            <div id="search-modal" class="modal">
-                <div class="modal-content">
-                    <span class="close" onclick="closeSearchModal()">&times;</span>
-                    <h2>Resultados da Busca</h2>
-                    <label for="search-area-modal">Área da Física:</label>
-                    <input type="text" id="search-area-modal"><br>
-                    <label for="search-fabricante-modal">Fabricante:</label>
-                    <input type="text" id="search-fabricante-modal"><br>
-                    <label for="search-estado-modal">Estado:</label>
-                    <input type="text" id="search-estado-modal"><br>
-                    <button type="button" onclick="searchEquipments()">Buscar Equipamentos</button>
-                </div>
+            <div class="search-container">
+                <label for="search-term">Buscar:</label>
+                <input type="text" id="search-term" placeholder="Digite para pesquisar...">
             </div>
         </div>
 
@@ -432,3 +407,9 @@
                     <label for="edit-estado">Estado:</label>
                     <input type="text" id="edit-estado">
                     <button type="button" onclick="saveEdit()">Salvar alterações</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
