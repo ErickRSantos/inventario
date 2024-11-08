@@ -1,12 +1,197 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+    <link href="https://fonts.cdnfonts.com/css/sf-pro-display" rel="stylesheet">
     <link rel="stylesheet" href="styles.css"> <!-- Incluindo o arquivo CSS externo -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laboratório de Física</title>
-    <!-- Firebase SDK -->
+    <style>
+        /* Estilo para a tabela */
+        table {
+            border-collapse: collapse; /* Remove divisões verticais */
+            width: 100%; /* Largura total da tabela */
+        }
+        th, td {
+            border: none; /* Remove bordas de células */
+            padding: 8px; /* Espaçamento interno */
+            text-align: left; /* Alinhamento à esquerda */
+        }
+        tr {
+            border-bottom: 1px solid #ccc; /* Apenas linhas horizontais */
+        }
+        /* Estilo para os checkboxes */
+        input[type="checkbox"] {
+            width: 20px; /* Aumenta a largura do checkbox */
+            height: 20px; /* Aumenta a altura do checkbox */
+        }
+        /* Estilo básico para o modal */
+        .modal {
+            display: none; /* Ocultar por padrão */
+            position: fixed; /* Ficar em cima da página */
+            z-index: 1; /* Ficar na frente */
+            left: 0;
+            top: 0;
+            width: 100%; /* Largura total */
+            height: 100%; /* Altura total */
+            overflow: auto; /* Ativar rolagem se necessário */
+            background-color: rgb(0,0,0); /* Cor de fundo */
+            background-color: rgba(0,0,0,0.4); /* Fundo com opacidade */
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% de margem no topo e centralizado */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Largura do modal */
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Estilo para os botões */
+        .action-btn {
+            width: 100px; /* Largura fixa para os botões */
+            margin: 5px; /* Margem entre os botões */
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: flex-start; /* Alinhamento à esquerda */
+            margin-bottom: 20px; /* Espaço abaixo dos botões */
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center; /* Alinhamento vertical */
+            margin-left: 15px; /* Espaço à esquerda */
+        }
+
+        .search-container input {
+            width: 150px; /* Largura do campo de pesquisa */
+            margin-left: 10px; /* Espaço entre o botão e o campo de pesquisa */
+        }
+
+        .items-per-page-container {
+            display: flex;
+            align-items: center; /* Alinhamento vertical */
+            margin-top: 20px; /* Espaço acima do seletor de itens por página */
+        }
+
+        .items-per-page-container label {
+            margin-right: 10px; /* Espaço entre o label e o select */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Equipamentos do Laboratório de Física</h1>
+        
+        <div class="button-container">
+            <button id="add-item-btn">Adicionar Novo Item</button>
+            <div class="search-container">
+                <label for="search-term">Buscar:</label>
+                <input type="text" id="search-term" placeholder="Digite para pesquisar...">
+            </div>
+        </div>
+
+        <div class="table-container">
+            <!-- Tabela de equipamentos -->
+            <table>
+                <thead>
+                    <tr>
+                        <th></th> <!-- Coluna vazia para o checkbox -->
+                        <th>Descrição</th>
+                        <th>Área da Física</th>
+                        <th>Código de Patrimônio</th>
+                        <th>Código do Kit</th>
+                        <th>Fabricante</th>
+                        <th>Estado</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="equipments-table-body">
+                    <!-- Os dados serão preenchidos aqui -->
+                </tbody>
+            </table>
+
+            <div id="pagination"></div>
+        </div>
+
+        <!-- Itens por página ao lado da seleção do número de páginas -->
+        <div class="items-per-page-container">
+            <label for="items-per-page">Itens por página:</label>
+            <select id="items-per-page">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+            </select>
+        </div>
+
+        <!-- Modal para Adicionar Novo Item -->
+        <div id="modal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2>Cadastrar Novo Equipamento</h2>
+                <form id="add-form">
+                    <label for="add-descricao">Descrição:</label>
+                    <input type="text" id="add-descricao">
+                    <label for="add-area">Área da Física:</label>
+                    <input type="text" id="add-area">
+                    <label for="add-codigoPatrimonio">Código de Patrimônio:</label>
+                    <input type="text" id="add-codigoPatrimonio">
+                    <label for="add-codigoKit">Código do Kit:</label>
+                    <input type="text" id="add-codigoKit">
+                    <label for="add-fabricante">Fabricante:</label>
+                    <input type="text" id="add-fabricante">
+                    <label for="add-estado">Estado:</label>
+                    <input type="text" id="add-estado">
+                    <button type="button" onclick="addEquip()">Cadastrar</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal para Editar Equipamento -->
+        <div id="edit-modal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2>Editar Equipamento</h2>
+                <form id="edit-form">
+                    <input type="hidden" id="edit-id">
+                    <label for="edit-descricao">Descrição:</label>
+                    <input type="text" id="edit-descricao">
+                    <label for="edit-area">Área da Física:</label>
+                    <input type="text" id="edit-area">
+                    <label for="edit-codigoPatrimonio">Código de Patrimônio:</label>
+                    <input type="text" id="edit-codigoPatrimonio">
+                    <label for="edit-codigoKit">Código do Kit:</label>
+                    <input type="text" id="edit-codigoKit">
+                    <label for="edit-fabricante">Fabricante:</label>
+                    <input type="text" id="edit-fabricante">
+                    <label for="edit-estado">Estado:</label>
+                    <input type="text" id="edit-estado">
+                    <button type="button" onclick="saveEdit()">Salvar</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
         import { getDatabase, ref, onValue, push, update, remove } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
@@ -25,16 +210,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const equipmentsRef = ref(db, 'tagsLidas');
-        const idRef = ref(db, 'Variaveis/id');
-
-        // Obtendo o valor de `id`
-        onValue(idRef, (snapshot) => {
-        const id = snapshot.val();
-        console.log("ID:", id);
-        // Aqui você pode usar a variável `id` conforme necessário no código
-        }, (error) => {
-        console.error("Erro ao buscar o ID:", error);
-        });
 
         let currentPage = 1;
         let itemsPerPage = 5;
@@ -61,6 +236,7 @@
 
             paginatedData.forEach(item => {
                 const row = `<tr>
+                    <td><input type="checkbox" data-id="${item.key}"></td>
                     <td>${item.descricao}</td>
                     <td>${item.area}</td>
                     <td>${item.codigoPatrimonio}</td>
@@ -250,176 +426,21 @@
             document.getElementById('edit-modal').style.display = 'none';
         }
 
+        // Função para alternar a seleção de todos os checkboxes
+        function toggleSelectAll(selectAllCheckbox) {
+            const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('items-per-page').addEventListener('change', updateItemsPerPage);
             document.querySelector('#add-item-btn').addEventListener('click', openModal);
             document.getElementById('search-term').addEventListener('input', searchEquipments);
-            onValue(equipmentsRef, renderTable);
+             onValue(equipmentsRef, renderTable); // Renderiza a tabela ao carregar a página
         });
     </script>
-    <style>
-        /* Estilo básico para o modal */
-        .modal {
-            display: none; /* Ocultar por padrão */
-            position: fixed; /* Ficar em cima da página */
-            z-index: 1; /* Ficar na frente */
-            left: 0;
-            top: 0;
-            width: 100%; /* Largura total */
-            height: 100%; /* Altura total */
-            overflow: auto; /* Ativar rolagem se necessário */
-            background-color: rgb(0,0,0); /* Cor de fundo */
-            background-color: rgba(0,0,0,0.4); /* Fundo com opacidade */
-        }
 
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto; /* 15% de margem no topo e centralizado */
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%; /* Largura do modal */
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        /* Estilo para os botões */
-        .action-btn {
-            width: 100px; /* Largura fixa para os botões */
-            margin: 5px; /* Margem entre os botões */
-        }
-
-        .button-container {
-            display: flex;
-            justify-content: flex-start; /* Alinhamento à esquerda */
-            margin-bottom: 20px; /* Espaço abaixo dos botões */
-        }
-
-        .search-container {
-            display: flex;
-            align-items: center; /* Alinhamento vertical */
-            margin-left: 15px; /* Espaço à esquerda */
-        }
-
-        .search-container input {
-            width: 150px; /* Largura do campo de pesquisa */
-            margin-left: 10px; /* Espaço entre o botão e o campo de pesquisa */
-        }
-
-        .items-per-page-container {
-            display: flex;
-            align-items: center; /* Alinhamento vertical */
-            margin-top: 20px; /* Espaço acima do seletor de itens por página */
-        }
-
-        .items-per-page-container label {
-            margin-right: 10px; /* Espaço entre o label e o select */
-        }
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        <h1>Equipamentos do Laboratório de Física</h1>
-        
-        <div class="button-container">
-            <button id="add-item-btn">Adicionar Novo Item</button>
-            <div class="search-container">
-                <label for="search-term">Buscar:</label>
-                <input type="text" id="search-term" placeholder="Digite para pesquisar...">
-            </div>
-        </div>
-
-        <div class="table-container">
-            <!-- Tabela de equipamentos -->
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>Descrição</th>
-                        <th>Área da Física</th>
-                        <th>Código de Patrimônio</th>
-                        <th>Código do Kit</th>
-                        <th>Fabricante</th>
-                        <th>Estado</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="equipments-table-body">
-                    <!-- Os dados serão preenchidos aqui -->
-                </tbody>
-            </table>
-
-            <div id="pagination"></div>
-        </div>
-
-        <!-- Itens por página ao lado da seleção do número de páginas -->
-        <div class="items-per-page-container">
-            <label for="items-per-page">Itens por página:</label>
-            <select id="items-per-page">
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="15">15</option>
-                <option value="20">20</option>
-            </select>
-        </div>
-
-        <!-- Modal para Adicionar Novo Item -->
-        <div id="modal" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="closeModal()">&times;</span>
-                <h2>Cadastrar Novo Equipamento</h2>
-                <form id="add-form">
-                    <label for="add-descricao">Descrição:</label>
-                    <input type="text" id="add-descricao">
-                    <label for="add-area">Área da Física:</label>
-                    <input type="text" id="add-area">
-                    <label for="add-codigoPatrimonio">Código de Patrimônio:</label>
-                    <input type="text" id="add-codigoPatrimonio">
-                    <label for="add-codigoKit">Código do Kit:</label>
-                    <input type="text" id="add-codigoKit">
-                    <label for="add-fabricante">Fabricante:</label>
-                    <input type="text" id="add-fabricante">
-                    <label for="add-estado">Estado:</label>
-                    <input type="text" id="add-estado">
-                    <button type="button" onclick="addEquip()">Cadastrar</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Modal para Editar Equipamento -->
-        <div id="edit-modal" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="closeModal()">&times;</span>
-                <h2>Editar Equipamento</h2>
-                <form id="edit-form">
-                    <input type="hidden" id="edit-id">
-                    <label for="edit-descricao">Descrição:</label>
-                    <input type="text" id="edit-descricao">
-                    <label for="edit-area">Área da Física:</label>
-                    <input type="text" id="edit-area">
-                    <label for="edit-codigoPatrimonio">Código de Patrimônio:</label>
-                    <input type="text" id="edit-codigoPatrimonio">
-                    <label for="edit-codigoKit">Código do Kit:</label>
-                    <input type="text" id="edit-codigoKit">
-                    <label for="edit-fabricante">Fabricante:</label>
-                    <input type="text" id="edit-fabricante">
-                    <label for="edit-estado">Estado:</label>
-                    <input type="text" id="edit-estado">
-                    <button type="button" onclick="saveEdit()">Salvar alterações</button>
-                </form>
-            </div>
-        </div>
-    </div>
 </body>
-</html>
+</html>          
