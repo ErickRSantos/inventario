@@ -24,15 +24,11 @@ String WIFI_PASSWORD;
 #define DATABASE_URL "https://inventario-c50f8-default-rtdb.firebaseio.com/"
 
 FirebaseData fbdo;
-FirebaseAuth auth;
 FirebaseConfig config;
-int count = 0;
-unsigned long sendDataPrevMillis = 0;
 bool signupOK = false;
 
 //Variáveis do projeto
 String uid = "";
-
 
 // Variáveis do modo de leitura
 bool selecaoBloco = false;
@@ -58,17 +54,21 @@ int conversao = 0;
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 
-LiquidCrystal_I2C lcd(enderecoLCD, 16, 2);
+LiquidCrystal_I2C lcd(enderecoLCD, 16, 2);  // Objeto lcd
 
-FirebaseJson leituraSala;  //Cria instancia para guardar as uids
+FirebaseJson leitura;  //Cria instancia para guardar as uids
 
 //*****************************************************************************************//
 
 void wifiSetup() {
 
   lcd.clear();
-  lcd.setCursor(0,0);
+  lcd.setCursor(0, 0);
   lcd.print("Conecte ao Wifi");
+  lcd.setCursor(0,1);
+  lcd.print("Entre na Serial");
+
+  //Adicionar um while de confirmação pelo botão
 
   Serial.println("- Iniciando conexão com o wifi...");
   Serial.print("- Qual o nome da rede wifi? ");
@@ -166,6 +166,23 @@ void setup() {
 
 void loop() {
 
+  if (signupOK == false) {
+    wifiSetup(); //Configurando WIFI
+    delay(300);
+
+    //firebase
+    firebaseSetup(); // Configurando o Banco de Dados Firebase
+    delay(300);
+
+    signupOK = true;
+
+    if (Firebase.RTDB.getJSON(&fbdo, "/tagsLidas")) { //Registra os dados já presentes no banco de dados na instancia leituraSala
+      leitura = fbdo.jsonObject();
+      Serial.println("Banco de dados lido");
+      leitura.toString(Serial, true);
+    }
+  }
+
   int modo = selecionarOpcao(); /* 1 - Setup; 2 - Leitura; 3 - Registro */
   String smodo = String(modo);
   bool botao = digitalRead(pinBot1);
@@ -178,20 +195,6 @@ void loop() {
   if (modo == 1 && botao == HIGH) {  // Modo setup
     if (signupOK != true) {
       //wifi
-      wifiSetup();
-
-      //firebase
-      firebaseSetup();
-      delay(300);
-
-      signupOK = true;
-
-      if(Firebase.RTDB.getJSON(&fbdo, "/tagsLidas")){
-        leituraSala = fbdo.jsonObject();
-        Serial.println("Banco de dados lido");
-        leituraSala.toString(Serial, true);
-      }
-      
     }
     modo = 0;
   } else if (modo == 2 && botao == HIGH) {
@@ -346,8 +349,8 @@ void loop() {
 
               if (valorBotSim == 1 && valorBotNao == 0)  //Caso em que o botão de confirmar é pressionado
               {
-                leituraSala.set(uid + "/local", local);
-                leituraSala.toString(Serial, true);
+                leitura.set(uid + "/local", local);
+                leitura.toString(Serial, true);
                 lcd.setCursor(0, 1);
                 lcd.print("            ");
                 delay(500);
@@ -358,7 +361,7 @@ void loop() {
                 lcd.print("            ");
                 confirma = 1;
 
-                Serial.print(Firebase.RTDB.set(&fbdo, F("/tagsLidas/"), &leituraSala) ? "ok" : fbdo.errorReason().c_str());
+                Serial.print(Firebase.RTDB.set(&fbdo, F("/tagsLidas/"), &leitura) ? "ok" : fbdo.errorReason().c_str());
               } else if (valorBotSim == 0 && valorBotNao == 1)  //Caso em que o botão de cancelar é pressionado
               {
                 confirma = 1;
