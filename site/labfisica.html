@@ -24,7 +24,17 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const equipmentsRef = ref(db, 'equipamentos');
+        const equipmentsRef = ref(db, 'tagsLidas');
+        const idRef = ref(db, 'Variaveis/id');
+
+        // Obtendo o valor de `id`
+        onValue(idRef, (snapshot) => {
+        const id = snapshot.val();
+        console.log("ID:", id);
+        // Aqui você pode usar a variável `id` conforme necessário no código
+        }, (error) => {
+        console.error("Erro ao buscar o ID:", error);
+        });
 
         let currentPage = 1;
         let itemsPerPage = 5;
@@ -196,7 +206,7 @@
                     estado
                 };
 
-                const equipRef = ref(db, 'equipamentos/' + id);
+                const equipRef = ref(db, 'tagsLidas/' + id);
                 update(equipRef, updatedEquip).then(() => {
                     alert('Equipamento atualizado com sucesso!');
                     document.getElementById('edit-form').reset();
@@ -212,7 +222,7 @@
         // Função para remover um equipamento
         window.removeEquip = function(id) {
             if (confirm('Tem certeza que deseja excluir este equipamento?')) {
-                const equipRef = ref(db, 'equipamentos/' + id);
+                const equipRef = ref(db, 'tagsLidas/' + id);
                 remove(equipRef).then(() => {
                     alert('Equipamento excluído com sucesso!');
                 }).catch((error) => {
