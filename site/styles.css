@@ -13,9 +13,9 @@
     
     /* Cores de borda */
     --border-color: #555; /* Cor da borda */
-    
+        
     /* Cores de interação */
-    --hover-color: #777 ; /* Cor ao passar o mouse */
+    --hover-color: #d9d9d9 ; /* Cor ao passar o mouse */
 }
 
 /* Estilo global */

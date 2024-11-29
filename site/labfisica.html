@@ -8,8 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laboratório de Física</title>
     <style>
+        
         /* Estilo para a tabela */
         table {
+
             border-collapse: collapse; /* Remove divisões verticais */
             width: 100%; /* Largura total da tabela */
         }
@@ -49,6 +51,7 @@
         }
 
         .close {
+
             color: #aaa;
             float: right;
             font-size: 28px;
@@ -92,7 +95,7 @@
         }
 
         .items-per-page-container label {
-            margin-right: 10px; /* Espaço entre o label e o select */
+            margin-right: 20px; /* Espaço entre o label e o select */
         }
     </style>
 </head>
@@ -318,36 +321,43 @@
             });
         }
 
-        // Função de adicionar equipamento
-        window.addEquip = function() {
-            const descricao = document.getElementById('add-descricao').value;
-            const area = document.getElementById('add-area').value;
-            const codigoPatrimonio = document.getElementById('add-codigoPatrimonio').value;
-            const codigoKit = document.getElementById('add-codigoKit').value;
-            const fabricante = document.getElementById('add-fabricante').value;
-            const estado = document.getElementById('add-estado').value;
+// Função de adicionar equipamento com índice numérico
+window.addEquip = function() {
+    const descricao = document.getElementById('add-descricao').value;
+    const area = document.getElementById('add-area').value;
+    const codigoPatrimonio = document.getElementById('add-codigoPatrimonio').value;
+    const codigoKit = document.getElementById('add-codigoKit').value;
+    const fabricante = document.getElementById('add-fabricante').value;
+    const estado = document.getElementById('add-estado').value;
 
-            if (descricao && area && codigoPatrimonio && codigoKit && fabricante && estado) {
-                const newEquip = {
-                    descricao,
-                    area,
-                    codigoPatrimonio,
-                    codigoKit,
-                    fabricante,
-                    estado
-                };
+    if (descricao && area && codigoPatrimonio && codigoKit && fabricante && estado) {
+        const newEquip = {
+            descricao,
+            area,
+            codigoPatrimonio,
+            codigoKit,
+            fabricante,
+            estado
+        };
 
-                push(equipmentsRef, newEquip).then(() => {
-                    alert('Equipamento cadastrado com sucesso!');
-                    document.getElementById('add-form').reset();
-                    closeModal();  // Fechar o modal após cadastrar
-                }).catch((error) => {
-                    console.error('Erro ao adicionar equipamento:', error);
-                });
-            } else {
-                alert('Todos os campos são obrigatórios.');
-            }
-        }
+        // Obter o próximo índice numérico com base no número de filhos existentes
+        onValue(equipmentsRef, (snapshot) => {
+            const index = snapshot.size; // Número de itens no nó 'tagsLidas'
+            const indexedRef = ref(db, `tagsLidas/${index}`); // Caminho com índice numérico
+
+            update(indexedRef, newEquip).then(() => {
+                alert('Equipamento cadastrado com sucesso!');
+                document.getElementById('add-form').reset();
+                closeModal(); // Fechar o modal após cadastrar
+            }).catch((error) => {
+                console.error('Erro ao adicionar equipamento:', error);
+            });
+        }, { onlyOnce: true }); // Executa apenas uma vez para evitar múltiplas leituras
+    } else {
+        alert('Todos os campos são obrigatórios.');
+    }
+};
+
 
         // Função de abrir modal e preencher dados para edição
         window.editEquip = function(id, descricao, area, codigoPatrimonio, codigoKit, fabricante, estado) {
