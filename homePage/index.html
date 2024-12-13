@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <link href="https://fonts.cdnfonts.com/css/sf-pro-display" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css"> <!-- Incluindo o arquivo CSS externo -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratório de Física</title>
+    <style>
+        
+        /* Estilo para a tabela */
+        table {
+
+            border-collapse: collapse; /* Remove divisões verticais */
+            width: 100%; /* Largura total da tabela */
+        }
+        th, td {
+            border: none; /* Remove bordas de células */
+            padding: 8px; /* Espaçamento interno */
+            text-align: left; /* Alinhamento à esquerda */
+        }
+        tr {
+            border-bottom: 1px solid #ccc; /* Apenas linhas horizontais */
+        }
+        /* Estilo para os checkboxes */
+        input[type="checkbox"] {
+            width: 20px; /* Aumenta a largura do checkbox */
+            height: 20px; /* Aumenta a altura do checkbox */
+        }
+        /* Estilo básico para o modal */
+        .modal {
+            display: none; /* Ocultar por padrão */
+            position: fixed; /* Ficar em cima da página */
+            z-index: 1; /* Ficar na frente */
+            left: 0;
+            top: 0;
+            width: 100%; /* Largura total */
+            height: 100%; /* Altura total */
+            overflow: auto; /* Ativar rolagem se necessário */
+            background-color: rgb(0,0,0); /* Cor de fundo */
+            background-color: rgba(0,0,0,0.4); /* Fundo com opacidade */
+        }
+
+        .modal-content {
+            background-color: #2e2e2e;
+            margin: 15% auto; /* 15% de margem no topo e centralizado */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Largura do modal */
+        }
+
+        .close {
+
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Estilo para os botões */
+        .action-btn {
+            width: 100px; /* Largura fixa para os botões */
+            margin: 5px; /* Margem entre os botões */
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: flex-start; /* Alinhamento à esquerda */
+            margin-bottom: 20px; /* Espaço abaixo dos botões */
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center; /* Alinhamento vertical */
+            margin-left: 15px; /* Espaço à esquerda */
+        }
+
+        .search-container input {
+            width: 150px; /* Largura do campo de pesquisa */
+            margin-left: 10px; /* Espaço entre o botão e o campo de pesquisa */
+        }
+
+        .items-per-page-container {
+            display: flex;
+            align-items: center; /* Alinhamento vertical */
+            margin-top: 20px; /* Espaço acima do seletor de itens por página */
+        }
+
+        .items-per-page-container label {
+            margin-right: 20px; /* Espaço entre o label e o select */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Laboratório de Física</h1>
+        
+        <div class="button-container">
+            <button id="add-item-btn">Adicionar Novo Item</button>
+            <div class="search-container">
+                <label for="search-term">Buscar:</label>
+                <input type="text" id="search-term" placeholder="Digite para pesquisar...">
+            </div>
+        </div>
+
+        <div class="table-container">
+            <!-- Tabela de equipamentos -->
+            <table>
+                <thead>
+                    <tr>
+                        <th></th> <!-- Coluna vazia para o checkbox -->
+                        <th>Descrição</th>
+                        <th>Área da Física</th>
+                        <th>Código de Patrimônio</th>
+                        <th>Código do Kit</th>
+                        <th>Fabricante</th>
+                        <th>Estado</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="equipments-table-body">
+                    <!-- Os dados serão preenchidos aqui -->
+                </tbody>
+            </table>
+
+            <div id="pagination"></div>
+        </div>
+
+        <!-- Itens por página ao lado da seleção do número de páginas -->
+        <div class="items-per-page-container">
+            <label for="items-per-page">Itens por página:</label>
+            <select id="items-per-page">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+            </select>
+        </div>
+
+        <!-- Modal para Adicionar Novo Item -->
+        <div id="modal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2>Cadastrar Novo Equipamento</h2>
+                <form id="add-form">
+                    <label for="add-descricao">Descrição:</label>
+                    <input type="text" id="add-descricao">
+                    <label for="add-area">Área da Física:</label>
+                    <input type="text" id="add-area">
+                    <label for="add-codigoPatrimonio">Código de Patrimônio:</label>
+                    <input type="text" id="add-codigoPatrimonio">
+                    <label for="add-codigoKit">Código do Kit:</label>
+                    <input type="text" id="add-codigoKit">
+                    <label for="add-fabricante">Fabricante:</label>
+                    <input type="text" id="add-fabricante">
+                    <label for="add-estado">Estado:</label>
+                    <input type="text" id="add-estado">
+                    <button type="button" onclick="addEquip()">Cadastrar</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal para Editar Equipamento -->
+        <div id="edit-modal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2>Editar Equipamento</h2>
+                <form id="edit-form">
+                    <input type="hidden" id="edit-id">
+                    <label for="edit-descricao">Descrição:</label>
+                    <input type="text" id="edit-descricao">
+                    <label for="edit-area">Área da Física:</label>
+                    <input type="text" id="edit-area">
+                    <label for="edit-codigoPatrimonio">Código de Patrimônio:</label>
+                    <input type="text" id="edit-codigoPatrimonio">
+                    <label for="edit-codigoKit">Código do Kit:</label>
+                    <input type="text" id="edit-codigoKit">
+                    <label for="edit-fabricante">Fabricante:</label>
+                    <input type="text" id="edit-fabricante">
+                    <label for="edit-estado">Estado:</label>
+                    <input type="text" id="edit-estado">
+                    <button type="button" onclick="saveEdit()">Salvar</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+        import { getDatabase, ref, onValue, push, update, remove } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAf0ubkUu9w0gJxshU7Lu78LGFlN3_QjcA",
+            authDomain: "inventario-c50f8.firebaseapp.com",
+            databaseURL: "https://inventario-c50f8-default-rtdb.firebaseio.com",
+            projectId: "inventario-c50f8",
+            storageBucket: "inventario-c50f8.firebasestorage.app",
+            messagingSenderId: "369500930345",
+            appId: "1:369500930345:web:aee12cb852f5a8711d7738",
+            measurementId: "G-5GJP3TWZPC"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const equipmentsRef = ref(db, 'tagsLidas');
+
+        let currentPage = 1;
+        let itemsPerPage = 5;
+
+        // Função para renderizar a tabela com os dados
+        function renderTable(snapshot) {
+            const tableBody = document.getElementById('equipments-table-body');
+            tableBody.innerHTML = "";
+            const data = [];
+            snapshot.forEach((childSnapshot) => {
+                data.push({ key: childSnapshot.key, ...childSnapshot.val() });
+            });
+            paginateData(data);
+        }
+
+        // Paginação dos dados
+        function paginateData(data) {
+            const tableBody = document.getElementById('equipments-table-body');
+            tableBody.innerHTML = "";
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedData = data.slice(startIndex, endIndex);
+
+            paginatedData.forEach(item => {
+                const row = `<tr>
+                    <td><input type="checkbox" data-id="${item.key}"></td>
+                    <td>${item.descricao}</td>
+                    <td>${item.area}</td>
+                    <td>${item.codigoPatrimonio}</td>
+                    <td>${item.codigoKit}</td>
+                    <td>${item.fabricante}</td>
+                    <td>${item.estado}</td>
+                    <td>
+                        <button class="action-btn edit-btn" data-id="${item.key}">
+                            <i class="fas fa-edit"></i> <!-- Ícone de edição -->
+                        </button>
+                        <button class="action-btn remove-btn" data-id="${item.key}">
+                            <i class="fas fa-trash"></i> <!-- Ícone de exclusão -->
+                        </button>
+                    </td>
+                    </tr>`;
+                tableBody.innerHTML += row;
+            });
+
+            renderPagination(data.length);
+
+            // Associar eventos aos botões de editar e excluir
+            document.querySelectorAll('.edit-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const item = data.find(equip => equip.key === id);
+                    if (item) {
+                        window.editEquip(item.key, item.descricao, item.area, item.codigoPatrimonio, item.codigoKit, item.fabricante, item.estado);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.remove-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    window.removeEquip(id);
+                });
+            });
+        }
+
+        // Função para renderizar os botões de paginação
+        function renderPagination(totalItems) {
+            const paginationDiv = document.getElementById('pagination');
+            paginationDiv.innerHTML = "";
+
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement('button');
+                button.innerText = i;
+                button.classList.add('pagination-btn');
+                if (i === currentPage) button.classList.add('active');
+                button.addEventListener('click', () => {
+                    currentPage = i;
+                    onValue(equipmentsRef, renderTable);
+                });
+                paginationDiv.appendChild(button);
+            }
+        }
+
+        // Função para buscar equipamentos por termo
+        window.searchEquipments = function() {
+            const searchTerm = document.getElementById('search-term').value.toLowerCase();
+
+            onValue(equipmentsRef, (snapshot) => {
+                const filteredData = [];
+                snapshot.forEach((childSnapshot) => {
+                    const data = childSnapshot.val();
+                    if (data.descricao.toLowerCase().includes(searchTerm) ||
+                        data.area.toLowerCase().includes(searchTerm) ||
+                        data.fabricante.toLowerCase().includes(searchTerm) ||
+                        data.estado.toLowerCase().includes(searchTerm) ||
+                        data.codigoPatrimonio.toLowerCase().includes(searchTerm) ||
+                        data.codigoKit.toLowerCase().includes(searchTerm)) {
+                        filteredData.push({ key: childSnapshot.key, ...data });
+                    }
+                });
+                paginateData(filteredData);
+            }, (error) => {
+                console.error('Erro ao buscar dados:', error);
+            });
+        }
+
+// Função de adicionar equipamento com índice numérico
+window.addEquip = function() {
+    const descricao = document.getElementById('add-descricao').value;
+    const area = document.getElementById('add-area').value;
+    const codigoPatrimonio = document.getElementById('add-codigoPatrimonio').value;
+    const codigoKit = document.getElementById('add-codigoKit').value;
+    const fabricante = document.getElementById('add-fabricante').value;
+    const estado = document.getElementById('add-estado').value;
+
+    if (descricao && area && codigoPatrimonio && codigoKit && fabricante && estado) {
+        const newEquip = {
+            descricao,
+            area,
+            codigoPatrimonio,
+            codigoKit,
+            fabricante,
+            estado
+        };
+
+        // Obter o próximo índice numérico com base no número de filhos existentes
+        onValue(equipmentsRef, (snapshot) => {
+            const index = snapshot.size; // Número de itens no nó 'tagsLidas'
+            const indexedRef = ref(db, `tagsLidas/${index}`); // Caminho com índice numérico
+
+            update(indexedRef, newEquip).then(() => {
+                alert('Equipamento cadastrado com sucesso!');
+                document.getElementById('add-form').reset();
+                closeModal(); // Fechar o modal após cadastrar
+            }).catch((error) => {
+                console.error('Erro ao adicionar equipamento:', error);
+            });
+        }, { onlyOnce: true }); // Executa apenas uma vez para evitar múltiplas leituras
+    } else {
+        alert('Todos os campos são obrigatórios.');
+    }
+};
+
+
+        // Função de abrir modal e preencher dados para edição
+        window.editEquip = function(id, descricao, area, codigoPatrimonio, codigoKit, fabricante, estado) {
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-descricao').value = descricao;
+            document.getElementById('edit-area').value = area;
+            document.getElementById('edit-codigoPatrimonio').value = codigoPatrimonio;
+            document.getElementById('edit-codigoKit').value = codigoKit;
+            document.getElementById('edit-fabricante').value = fabricante;
+            document.getElementById('edit-estado').value = estado;
+
+            document.getElementById('edit-modal').style.display = 'block';
+        }
+
+        // Função de salvar a edição no Firebase
+        window.saveEdit = function() {
+            const id = document.getElementById('edit-id').value;
+            const descricao = document.getElementById('edit-descricao').value;
+            const area = document.getElementById('edit-area').value;
+            const codigoPatrimonio = document.getElementById('edit-codigoPatrimonio').value;
+            const codigoKit = document.getElementById('edit-codigoKit').value;
+            const fabricante = document.getElementById('edit-fabricante').value;
+            const estado = document.getElementById('edit-estado').value;
+
+            if (descricao && area && codigoPatrimonio && codigoKit && fabricante && estado) {
+                const updatedEquip = {
+                    descricao,
+                    area,
+                    codigoPatrimonio,
+                    codigoKit,
+                    fabricante,
+                    estado
+                };
+
+                const equipRef = ref(db, 'tagsLidas/' + id);
+                update(equipRef, updatedEquip).then(() => {
+                    alert('Equipamento atualizado com sucesso!');
+                    document.getElementById('edit-form').reset();
+                    closeModal();  // Fechar o modal após editar
+                }).catch((error) => {
+                    console.error('Erro ao atualizar dados:', error);
+                });
+            } else {
+                alert('Todos os campos são obrigatórios.');
+            }
+        }
+
+        // Função para remover um equipamento
+        window.removeEquip = function(id) {
+            if (confirm('Tem certeza que deseja excluir este equipamento?')) {
+                const equipRef = ref(db, 'tagsLidas/' + id);
+                remove(equipRef).then(() => {
+                    alert('Equipamento excluído com sucesso!');
+                }).catch((error) => {
+                    console.error('Erro ao excluir:', error);
+                });
+            }
+        }
+
+        // Função para atualizar o número de itens por página
+        function updateItemsPerPage() {
+            const selectedValue = document.getElementById('items-per-page').value;
+            itemsPerPage = parseInt(selectedValue, 10);
+            currentPage = 1;
+            onValue(equipmentsRef, renderTable);
+        }
+
+        // Função para abrir o modal de cadastro
+        function openModal() {
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        // Função para fechar o modal
+        window.closeModal = function() {
+            document.getElementById('modal').style.display = 'none';
+            document.getElementById('edit-modal').style.display = 'none';
+        }
+
+        // Função para alternar a seleção de todos os checkboxes
+        function toggleSelectAll(selectAllCheckbox) {
+            const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('items-per-page').addEventListener('change', updateItemsPerPage);
+            document.querySelector('#add-item-btn').addEventListener('click', openModal);
+            document.getElementById('search-term').addEventListener('input', searchEquipments);
+             onValue(equipmentsRef, renderTable); // Renderiza a tabela ao carregar a página
+        });
+    </script>
+
+</body>
+</html>          

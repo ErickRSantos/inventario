@@ -65,7 +65,6 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 LiquidCrystal_I2C lcd(enderecoLCD, 16, 2);
 
 FirebaseJson leituraSala;  //Cria instancia para guardar as uids
-FirebaseJson campus;
 
 
 //*****************************************************************************************//
@@ -166,17 +165,17 @@ void loop() {
 
     if (Firebase.RTDB.getJSON(&fbdo, "/tagsLidas")) {
       leituraSala = fbdo.jsonObject();
-      Serial.println("Leitura Anterior obtida");
+      Serial.println("Banco de dados lido");
       leituraSala.toString(Serial, true);
-    }
-    if (Firebase.RTDB.getJSON(&fbdo, "/campus")) {
-      campus = fbdo.jsonObject();
-      Serial.println("Mapeamento do campus obtido");
-      campus.toString(Serial, true);
     }
     iniciar = true;
   }
- else if (modo == 2 && botao == HIGH) {
+
+  if (modo == 1 && botao == HIGH) {  // Modo setup
+    if (signupOK != true) {
+    }
+    modo = 0;
+  } else if (modo == 2 && botao == HIGH) {
     delay(300);
     lcd.clear();
 
