@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login e Registro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --background-body: #2e2e2e;
+            --background-login: #3c3c3c;
+            --background-input: #444;
+            --text-light: #e0e0e0;
+            --text-white: #ffffff;
+            --border-color: #555;
+            --hover-color: #d9d9d9;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-body);
+            color: var(--text-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: var(--background-login);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            width: 300px;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: var(--text-white);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--background-input);
+            color: var(--text-light);
+            transition: border-color 0.3s;
+        }
+
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            border-color: var(--hover-color);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--border-color);
+            color: var(--text-white);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: var(--hover-color);
+        }
+
+        .toggle-link {
+            margin-top: 15px;
+            color: var(--text-light);
+        }
+
+        .toggle-link a {
+            color: var(--hover-color);
+            text-decoration: none;
+        }
+
+        .toggle-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="login-container">
+        <h2>Login</h2>
+        <form id="login-form" onsubmit="return handleLogin(event)">
+            <div class="form-group">
+                <label for="login-email">Email:</label>
+                <input type="email" id="login-email" required>
+            </div>
+            <div class="form-group">
+                <label for="login-password">Senha:</label>
+                <input type="password" id="login-password" required>
+            </div>
+            <button type="submit">Entrar</button>
+        </form>
+        <div class="toggle-link">
+            <a href="#" onclick="toggleForms()">Não tem uma conta? Registre-se</a>
+        </div>
+    </div>
+    <div class="container" style="display:none;" id="register-container">
+        <h2>Registro</h2>
+        <form id="register-form">
+            <div class="form-group">
+                <label for="register-email">Email:</label>
+                <input type="email" id="register-email" required>
+            </div>
+            <div class="form-group">
+                <label for="register-password">Senha:</label>
+                <input type="password" id="register-password" required>
+            </div>
+            <button type="submit">Registrar</button>
+        </form>
+        <div class="toggle-link">
+            <a href="#" onclick="toggleForms()">Já tem uma conta? Faça login</a>
+        </div>
+    </div>
+    <script>
+        function toggleForms() {
+            const loginContainer = document.getElementById('login-container');
+            const registerContainer = document.getElementById('register-container');
+            if (loginContainer.style.display === 'none') {
+                loginContainer.style.display = 'block';
+                registerContainer.style.display = 'none';
+            } else {
+                loginContainer.style.display = 'none';
+                registerContainer.style.display = 'block';
+            }
+        }
+
+        function handleLogin(event) {
+            event.preventDefault(); // Impede o envio padrão do formulário
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            // Aqui você deve implementar a lógica de autenticação no servidor
+            // Se o login for bem-sucedido, redireciona para a página "index.html" com dados do usuário em sessão
+
+            // Exemplo de redirecionamento (após autenticação bem-sucedida):
+            sessionStorage.setItem('userEmail', email); // Armazenar email na sessão
+            window.location.href = 'index.html'; // Redirecionar para a página principal
+        }
+    </script>
+</body>
+</html>
