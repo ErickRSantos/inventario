@@ -56,6 +56,8 @@ int valorPot = 0;
 int valorBot = 0;
 int conversao = 0;
 
+String blocos[] = {"A", "B", "C", "D", "E", "F"};
+
 //Definição do Módulo
 #define RST_PIN 17  // Configurable, see typical pin layout above
 #define SS_PIN 5    // Configurable, see typical pin layout above
@@ -64,7 +66,8 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 
 LiquidCrystal_I2C lcd(enderecoLCD, 16, 2);
 
-FirebaseJson leituraSala;  //Cria instancia para guardar as uids
+FirebaseJson tagsRegistradas;  //Cria instancia para guardar as uids
+FirebaseJson campus;
 
 
 //*****************************************************************************************//
@@ -164,9 +167,15 @@ void loop() {
     delay(300);
 
     if (Firebase.RTDB.getJSON(&fbdo, "/tagsLidas")) {
-      leituraSala = fbdo.jsonObject();
-      Serial.println("Banco de dados lido");
-      leituraSala.toString(Serial, true);
+      tagsRegistradas = fbdo.jsonObject();
+      Serial.println("Leitura das tags registradas realizada com sucesso!");
+      tagsRegistradas.toString(Serial, true);
+    }
+    delay(10);
+    if (Firebase.RTDB.getJSON(&fbdo, "/campus")) {
+      campus = fbdo.jsonObject();
+      Serial.println("Mapeamento do campus realizado com sucesso");
+      campus.toString(Serial, true);
     }
     iniciar = true;
   }
@@ -193,31 +202,10 @@ void loop() {
       lcd.print("Bloco: ");
       lcd.setCursor(7, 0);
 
-
-      if (conversao == 1) {
-        nomeBloco = "A";
-        lcd.print(nomeBloco);
-      } else if (conversao == 2) {
-        nomeBloco = "B";
-        lcd.print(nomeBloco);
-      } else if (conversao == 3) {
-        nomeBloco = "C";
-        lcd.print(nomeBloco);
-      } else if (conversao == 4) {
-        nomeBloco = "D";
-        lcd.print(nomeBloco);
-      } else if (conversao == 5) {
-        nomeBloco = "E";
-        lcd.print(nomeBloco);
-      } else if (conversao == 6) {
-        nomeBloco = "F";
-        lcd.print(nomeBloco);
-      }
-
       valorBot = digitalRead(pinBot1);
       if (valorBot == 1) {
         selecaoBloco = true;
-        blocoSelecionado = conversao;
+        blocoSelecionado = blocos[conversao-1];
         lcd.clear();
       }
     }
@@ -231,17 +219,17 @@ void loop() {
       valorPot = analogRead(pinPot);
 
       if (blocoSelecionado == 1) {
-        numeroSala = 20;
+        numeroSala = Firebase.RTDB.getInt(campus, "/A/numeroSala");
       } else if (blocoSelecionado == 2) {
-        numeroSala = 20;
+        numeroSala = Firebase.RTDB.getInt(campus, "/B/numeroSala");
       } else if (blocoSelecionado == 3) {
-        numeroSala = 20;
+        numeroSala = Firebase.RTDB.getInt(campus, "/C/numeroSala");
       } else if (blocoSelecionado == 4) {
-        numeroSala = 20;
+        numeroSala = Firebase.RTDB.getInt(campus, "/D/numeroSala");
       } else if (blocoSelecionado == 5) {
-        numeroSala = 20;
+        numeroSala = Firebase.RTDB.getInt(campus, "/E/numeroSala");
       } else if (blocoSelecionado == 6) {
-        numeroSala = 20;
+        numeroSala = Firebase.RTDB.getInt(campus, "/F/numeroSala");
       }
 
       int conversao = map(valorPot, 0, 4095, 1, numeroSala);
@@ -276,10 +264,9 @@ void loop() {
     while (acaoBot != 1)  //Espera ação do botão para iniciar a leitura
     {
 
-      int valorBotSim = digitalRead(pinBot1);
-      int valorBotNao = digitalRead(pinBot2);
+      // pinBot1 - Sim pinBot2 - Não
 
-      if (valorBotSim == HIGH && valorBotNao == LOW) {
+      if (digitalRead(pinBot1) == HIGH && digitalRead(pinBot2) == LOW) {
         //iniciarLeitura = true;
         delay(300);
 
@@ -322,13 +309,11 @@ void loop() {
 
             int confirma = 0;
             while (confirma == 0 && uid != " ") {
-              int valorBotSim = digitalRead(pinBot1);
-              int valorBotNao = digitalRead(pinBot2);
 
-              if (valorBotSim == 1 && valorBotNao == 0)  //Caso em que o botão de confirmar é pressionado
+              if (digitalRead(pinBot1) == HIGH && digitalRead(pinBot2) == LOW)  //Caso em que o botão de confirmar é pressionado
               {
-                leituraSala.set(uid + "/local", local);
-                leituraSala.toString(Serial, true);
+                tagsRegistradas.set(uid + "/local", local);
+                tagsRegistradas.toString(Serial, true);
                 lcd.setCursor(0, 1);
                 lcd.print("            ");
                 delay(500);
@@ -339,8 +324,8 @@ void loop() {
                 lcd.print("            ");
                 confirma = 1;
 
-                Serial.print(Firebase.RTDB.set(&fbdo, F("/tagsLidas/"), &leituraSala) ? "ok" : fbdo.errorReason().c_str());
-              } else if (valorBotSim == 0 && valorBotNao == 1)  //Caso em que o botão de cancelar é pressionado
+                Serial.print(Firebase.RTDB.set(&fbdo, F("/tagsLidas/"), &tagsRegistradas) ? "ok" : fbdo.errorReason().c_str());
+              } else if (digitalRead(pinBot1) == LOW && digitalRead(pinBot2) == HIGH)  //Caso em que o botão de cancelar é pressionado
               {
                 confirma = 1;
                 lcd.setCursor(0, 1);
@@ -352,7 +337,7 @@ void loop() {
                 lcd.setCursor(0, 1);
                 lcd.print("              ");
                 return;
-              } else if (valorBotSim == 1 && valorBotNao == 1)  //Caso em que os dois botões são pressionados
+              } else if (digitalRead(pinBot1) == HIGH && digitalRead(pinBot2) == HIGH)  //Caso em que os dois botões são pressionados
               {
                 /*Não realiza nada se os dois botoes forem pressionados ao mesmo tempo*/
               }
@@ -361,18 +346,16 @@ void loop() {
 
             int confirmaRep = 0;
             while (confirmaRep == 0) {
-              int valorBotSim = digitalRead(pinBot1);
-              int valorBotNao = digitalRead(pinBot2);
 
               lcd.clear();
               lcd.setCursor(0, 0);
               lcd.print("Finalizar?");
 
-              if (valorBotSim == LOW && valorBotNao == HIGH) {
+              if (digitalRead(pinBot1) == LOW && digitalRead(pinBot2) == HIGH) {
                 repeat = true;
                 lcd.clear();
                 confirmaRep = 1;
-              } else if (valorBotSim == HIGH && valorBotNao == LOW) {
+              } else if (digitalRead(pinBot1) == HIGH && digitalRead(pinBot2) == LOW) {
                 repeat = false;
                 lcd.setCursor(0, 0);
                 lcd.print("              ");
@@ -383,7 +366,7 @@ void loop() {
                 lcd.setCursor(0, 0);
                 lcd.print("              ");
                 confirmaRep = 1;
-              } else if (valorBotSim == HIGH && valorBotNao == HIGH) {
+              } else if (digitalRead(pinBot1) == HIGH && digitalRead(pinBot2) == HIGH) {
                 /*Não realiza nada se os dois botoes forem pressionados ao mesmo tempo*/
               }
               delay(100);
@@ -393,7 +376,7 @@ void loop() {
             selecaoSala = false;
           }
         }  //finalizou as leituras
-      } else if (valorBotSim == LOW && valorBotNao == HIGH) {
+      } else if (digitalRead(pinBot1) == LOW && digitalRead(pinBot2) == HIGH) {
         //iniciarLeitura = false;
         lcd.clear();
         lcd.setCursor(0, 0);
@@ -401,7 +384,7 @@ void loop() {
         delay(1000);
         acaoBot = 1;
         return;
-      } else if (valorBotSim == HIGH && valorBotNao == HIGH) {
+      } else if (digitalRead(pinBot1) == HIGH && digitalRead(pinBot2) == HIGH) {
         /*Não realiza nada se os dois botoes forem pressionados ao mesmo tempo*/
       }
       delay(100);
