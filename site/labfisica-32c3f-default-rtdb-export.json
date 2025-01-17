@@ -1,0 +1,124 @@
+{
+  "tagsLidas": {
+    "1": {
+      "descricao": "Gerador de Van de Graaff",
+      "area": "Eletricidade/Eletromagnetismo",
+      "codigoPatrimonio": "502.051",
+      "codigoKit": "",
+      "fabricante": "CIDEPE",
+      "estado": "Avaliar"
+    },
+    "2": {
+      "descricao": "Gerador Eletrostático de Correia",
+      "area": "Eletricidade/Eletromagnetismo",
+      "codigoPatrimonio": "313.199",
+      "codigoKit": "",
+      "fabricante": "CIDEPE",
+      "estado": "Avaliar"
+    },
+    "3": {
+      "descricao": "Gerador Eletrostático de Correia",
+      "area": "Eletricidade/Eletromagnetismo",
+      "codigoPatrimonio": "171.707",
+      "codigoKit": "",
+      "fabricante": "CIDEPE",
+      "estado": "Avaliar"
+    },
+    "4": {
+      "descricao": "Gerador Eletrostático de Correia",
+      "area": "Eletricidade/Eletromagnetismo",
+      "codigoPatrimonio": "171.704",
+      "codigoKit": "",
+      "fabricante": "CIDEPE",
+      "estado": "Avaliar"
+    },
+    "5": {
+      "descricao": "Kit de Mecânica de Sólidos",
+      "area": "Mecânica",
+      "codigoPatrimonio": "483.573",
+      "codigoKit": "",
+      "fabricante": "AZEHEB",
+      "estado": "Incompleto"
+    },
+    "6": {
+      "descricao": "Conjunto de Mecânica dos Fluidos",
+      "area": "Mecânica",
+      "codigoPatrimonio": "535.798",
+      "codigoKit": "EQ033D",
+      "fabricante": "CIDEPE",
+      "estado": "Incompleto"
+    },
+    "7": {
+      "descricao": "Conjunto de Mecânica dos Sólidos com hastes e sistema de forças básico",
+      "area": "Mecânica",
+      "codigoPatrimonio": "535.793",
+      "codigoKit": "SCN-F001A2-BAS",
+      "fabricante": "CIDEPE",
+      "estado": "Completo"
+    },
+    "8": {
+      "descricao": "Conjunto de Mecânica dos Sólidos com hastes e sistema de forças básico",
+      "area": "Mecânica",
+      "codigoPatrimonio": "535.795",
+      "codigoKit": "SCN-F001A2-BAS",
+      "fabricante": "CIDEPE",
+      "estado": "Incompleto"
+    },
+    "9": {
+      "descricao": "Conjunto de Mecânica: Rampa e Forças de Atrito",
+      "area": "Mecânica",
+      "codigoPatrimonio": "535.790",
+      "codigoKit": "SCN-F002H",
+      "fabricante": "CIDEPE",
+      "estado": "Incompleto"
+    },
+    "10": {
+      "descricao": "Conjunto de Queda Livre Básico",
+      "area": "Mecânica",
+      "codigoPatrimonio": "535.782",
+      "codigoKit": "EQ235D2-BAS",
+      "fabricante": "CIDEPE",
+      "estado": "Completo"
+    },
+    "11": {
+      "descricao": "Looping",
+      "area": "Mecânica",
+      "codigoPatrimonio": "504.672",
+      "codigoKit": "",
+      "fabricante": "CIDEPE",
+      "estado": "Avaliar"
+    },
+    "12": {
+      "descricao": "Conjunto de Ondas e Acústica",
+      "area": "Ondas Acústicas",
+      "codigoPatrimonio": "535.799",
+      "codigoKit": "EQ066F",
+      "fabricante": "CIDEPE",
+      "estado": "Completo"
+    },
+    "13": {
+      "descricao": "Gerador de Onda Estacionária",
+      "area": "Ondas Acústicas",
+      "codigoPatrimonio": "502.053",
+      "codigoKit": "",
+      "fabricante": "CIDEPE",
+      "estado": "Completo"
+    },
+    "14": {
+      "descricao": "Anel de Gravesande com Cabos",
+      "area": "Termodinâmica",
+      "codigoPatrimonio": "535.814",
+      "codigoKit": "EQ133B",
+      "fabricante": "CIDEPE",
+      "estado": "Avaliar"
+    },
+    "15": {
+      "descricao": "Dilatômetro Linear",
+      "area": "Termodinâmica",
+      "codigoPatrimonio": "535.806",
+      "codigoKit": "SCN-F003C",
+      "fabricante": "CIDEPE",
+      "estado": "Completo"
+    }
+  }
+}
